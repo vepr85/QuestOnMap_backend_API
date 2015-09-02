@@ -8,7 +8,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.Entity;
 import java.util.Arrays;
@@ -21,7 +24,7 @@ public class QuestOnMapBackendApplication implements CommandLineRunner {
 
 
     @Autowired
-    UsersRepository usersRepository;
+    AccountRepository usersRepository;
     @Autowired
     BoxRepository boxesRepository;
 
@@ -41,7 +44,7 @@ public class QuestOnMapBackendApplication implements CommandLineRunner {
 
         Arrays.asList("adam1,adam2,adam3,adam4,adam5".split(",")).forEach((u) -> {
             int i = 0;
-            usersRepository.save(new Users(u + "@gmail.com", u, "password", "/mock-data/images" + (++i) + ".jpg"));
+            usersRepository.save(new Account(u + "@gmail.com", u, "password", "/mock-data/images" + (++i) + ".jpg"));
             boxesRepository.save(new Box(u,"Title","Body","fgdfg"));
         });
 
@@ -53,8 +56,9 @@ public class QuestOnMapBackendApplication implements CommandLineRunner {
 
 
 @Entity
-class Users extends AbstractEntityId {
+class Account extends AbstractEntityId {
 
+    public Account(){}
     private String login;
 
     private String username;
@@ -79,7 +83,7 @@ class Users extends AbstractEntityId {
         return avatar;
     }
 
-    public Users(String login, String username, String password, String avatar) {
+    public Account(String login, String username, String password, String avatar) {
         this.login = login;
         this.username = username;
         this.password = password;
@@ -90,6 +94,7 @@ class Users extends AbstractEntityId {
 @Entity
 class Box extends AbstractEntityId {
 
+    public Box(){}
     private String username;
 
     private String title;
@@ -122,15 +127,36 @@ class Box extends AbstractEntityId {
     }
 }
 
-interface UsersRepository extends JpaRepository<Users, Long> {
-    public Collection<Users> findAllUsersByLogin(String title);
+interface AccountRepository extends JpaRepository<Account, Long> {
+    public Collection<Account> findAllUsersByLogin(String title);
 }
 
 interface BoxRepository extends JpaRepository<Box, Long> {
     public Collection<Box> findAllBoxesByUsername(String username);
 }
 
+@RestController
+class UserController {
 
+    @Autowired
+    AccountRepository usersRepository;
+
+    @RequestMapping("/users")
+    public ResponseEntity findUsers(){
+        return ResponseEntity.ok().body(usersRepository.findAll());
+    }
+}
+@RestController
+class BoxController {
+
+    @Autowired
+    BoxRepository boxRepository;
+
+    @RequestMapping("/boxes")
+    public ResponseEntity findUsers(){
+        return ResponseEntity.ok().body(boxRepository.findAll());
+    }
+}
 
 
 
